@@ -1,0 +1,301 @@
+{
+  "name": "Escritor De Petição",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "explicacao_processo",
+              "type": "any"
+            },
+            {
+              "name": "nome_petição"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        0
+      ],
+      "id": "2bf1dbc4-dad0-4cdf-90a1-a3ad4b3a119b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sobre o processo: {{ $json.explicacao_processo }}",
+        "options": {
+          "systemMessage": "=## Persona:\nVocê é um(a) advogado(a) sênior especialista em Processo Civil, com experiência sólida em Juizados Especiais Federais. Sua principal função é planejar estrategicamente petições com alta precisão técnica, orientando seu time sobre como redigir peças persuasivas, assertivas e alinhadas com a jurisprudência.\n\n## Task:\nSua tarefa é elaborar **o esboço detalhado da petição** com base no cenário processual fornecido. Você **não deve redigir o texto final da petição**, mas sim fornecer uma estratégia clara, seções estruturadas, pontos-chave que deverão ser argumentados e recomendações jurídicas sobre como deve ser conduzida a redação da peça por um redator especializado.\n\n## Contexto:\nVocê faz parte de um time de agentes jurídicos. Um agente de análise processual já forneceu um resumo estruturado do processo com informações detalhadas sobre a movimentação, fase atual e recomendação de atuação. Seu trabalho é criar a fundação para que outro agente redija a petição com excelência.\n\n## Específicos:\n- Crie a estrutura da petição com todos os tópicos essenciais.\n- Para cada seção, indique os argumentos principais que devem ser usados.\n- Destaque a fundamentação jurídica que deve embasar a petição.\n- Aponte todos os artigos da lei que devem ser citados.\n- Explique por que essa peça é estratégica neste momento processual.\n- Informe se há algo sensível ou que exige atenção do redator.\n\n## Importante:\n- Você **não deve escrever a petição pronta**. Apenas estruture e explique o que deve conter em cada parte.\n- Seja claro, técnico e didático."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        96,
+        0
+      ],
+      "id": "13bc2061-9d2d-42f0-843b-f2334d91ee8e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        320,
+        304
+      ],
+      "id": "a2d048e3-f16f-468a-9f93-9dc8ca74ce78",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "T02R1NTR78ODH2qt",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Modelo A Se Seguir: {{ $json.output }}",
+        "options": {
+          "systemMessage": "=## Persona:\nVocê é um(a) advogado(a) experiente, redator jurídico especializado em petições formais e estratégicas para Juizados Especiais Federais. Sua escrita é técnica, elegante e adequada para protocolo imediato.\n\n## Task:\nSua tarefa é redigir uma **petição completa de Cumprimento de Sentença**, seguindo fielmente o esboço e orientações fornecidos pelo Agente de Estratégia. Seu texto deve refletir uma peça jurídica pronta para protocolo, com embasamento legal preciso e redação impecável.\n\n## Contexto:\nVocê atua como parte de um fluxo de automação jurídica. O Agente de Estratégia já analisou o cenário processual e definiu como a petição deve ser feita. Com base nas instruções dele, você deve gerar o texto final da petição.\n\n## Específicos:\n- Siga a estrutura exata fornecida.\n- Use linguagem jurídica formal e persuasiva.\n- Redija todos os parágrafos com coesão e clareza.\n- Mantenha a fidelidade total ao conteúdo e lógica do esboço.\n- Não invente ou modifique informações do resumo.\n- SUA RESPOSTA DEVE SEMPRE SER FORMATADA EM MARKDOWN\n\n## Importante:\n- SUA RESPOSTA DEVE SEMPRE SER FORMATADA EM MARKDOWN\n- SEU PRIMEIRO CARACTER DEVE SEMPRE SER UM '#'\n- Essa petição será protocolada. Deve conter todas as formalidades.\n- O conteúdo precisa parecer redigido por um advogado sênior."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "9703fb9a-a3b4-44d0-9470-aa6307fe60cb",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        816,
+        0
+      ],
+      "id": "fb4e49dc-6b4a-47ef-a276-ef4e03198483",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "operation": "URL/HTML to PDF",
+        "convertType": "htmlToPDF",
+        "html": "={{ $json.data }}",
+        "advancedOptions": {
+          "name": "Petição"
+        }
+      },
+      "type": "n8n-nodes-pdfco.PDFco Api",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "1f2f1507-930d-409f-bcab-9f6067ce3996",
+      "name": "PDFco Api",
+      "credentials": {
+        "pdfcoApi": {
+          "id": "6mMR6v2aE1FimTSP",
+          "name": "PDF.co account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff6e6c40-6458-4dbe-968e-3c2e8c100125",
+              "name": "link da petição",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        0
+      ],
+      "id": "ee5b3dc0-47c3-4587-a9b2-a5485e292519",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "longUrl": "={{ $json.url }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.bitly",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "ef65a317-2619-41a9-8c49-80f6b3a74a58",
+      "name": "Create a link",
+      "credentials": {
+        "bitlyApi": {
+          "id": "bSKMBdOxe7B07K3J",
+          "name": "Bitly account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "explicacao_processo": "Processo: 0000832-35.2018.4.01.3202 - Procedimento do Juizado Especial Cível - TRF1. Exequente: nome completo e CPF/CNPJ a serem confirmados. Executado: nome completo e CPF/CNPJ a serem confirmados. Resumo: Procedimento no Juizado Especial Cível ajuizado em 2018, com audiência e instrução realizadas, evento definitivo em novembro de 2020, indicando encerramento de fase decisória e fase atual administrativa. Valor da Execução a ser confirmado. Advogado: Nome completo e OAB/UF a serem confirmados."
+        }
+      }
+    ],
+    "AI Agent": [
+      {
+        "json": {
+          "output": "**Esboço Detalhado da Petição: Petição de Cumprimento de Sentença/Execução no Procedimento do Juizado Especial Cível (Processo nº 0000832-35.2018.4.01.3202)**\n\n---\n\n### I. Preâmbulo (Endereçamento e Qualificação das Partes)\n- **Objetivo:** Identificar corretamente o juízo, as partes e seus representantes processuais.\n- **Conteúdo:**\n  - Endereçar à autoridade competente do Juizado Especial Cível do TRF1.\n  - Qualificar dum modo atualizado exequente e executado (confirmar CPF/CNPJ).\n  - Confirmar a qualificação do advogado, com OAB/UF.\n- **Atenção:** Conferir integralmente as informações cadastrais das partes para evitar nulidades e incidentes processuais.\n\n---\n\n### II. Breve Resumo Processual e Fundamentação Fática\n- **Objetivo:** Relembrar o contexto do processo e justificar o dever de cumprimento da obrigação imposta em sentença.\n- **Argumentos Principais:**\n  - Enfatizar que o processo foi ajuizado em 2018, passou por audiência e instrução, tendo evento decisório final ocorrido em novembro de 2020, o que confirma encerramento da fase de conhecimento.\n  - Indicar o trânsito em julgado ou a condição de definitividade da decisão, quando aplicável, para legitimar a execução.\n  - Mencionar eventual insucesso do executado em cumprir espontaneamente a obrigação.\n  - Especificar o valor da execução (com cálculo atualizado), ressaltando que deverá ser confirmado/precificado na petição.\n- **Fundamentação Jurídica:**\n  - Art. 527, inciso II e seguintes do CPC — Cumprimento de sentença.\n  - Art. 535, §1º do CPC, quanto à atualização do valor da obrigação.\n  - Art. 6º, inciso VII da Lei 9.099/95 (Lei dos Juizados Especiais), que prevê execução no procedimento sumaríssimo.\n- **Atenção:** Certificar que a decisão seja efetivamente líquida para fins de execução no Juizado Especial Cível.\n\n---\n\n### III. Pedido de Citação para Cumprimento Voluntário e Prazo\n- **Objetivo:** Pleitear medida inicial adequada para o início formal da execução.\n- **Argumentos Principais:**\n  - Solicitar que o executado seja citado para pagamento em até 15 dias, conforme previsão legal do CPC aplicável (art. 525).\n  - Alertar para consequências do não cumprimento, quais sejam: multa, honorários advocatícios e demais medidas coercitivas admitidas na execução, como penhora no sistema BacenJud.\n- **Fundamentação Jurídica:**\n  - Art. 525, caput, CPC — prazo e procedimento para cumprimento voluntário.\n  - Art. 523, §1°, CPC — multa de 10% pelo não pagamento.\n  - Art. 85, §§ 1º e 2º, CPC — fixação e atualização de honorários advocatícios em fase executória.\n- **Atenção:** Confirmar se o rito especial dos Juizados Especiais não restringe algum procedimento previsto no CPC tradicional.\n\n---\n\n### IV. Pedido Subsidiário para Medidas Executorais\n- **Objetivo:** Prevenir o inadimplemento do executado e acelerar a satisfação do crédito.\n- **Argumentos Principais:**\n  - Postular desde já, em caráter subsidiário, adoção de medidas coercitivas como:\n    - Penhora online via BacenJud.\n    - Inscrição do débito em cadastro de inadimplentes, se admitido.\n    - Bloqueio de valores e bens suficientes para satisfação da execução.\n  - Indicar necessidade de intimação do executado sobre essas medidas.\n- **Fundamentação Jurídica:**\n  - Arts. 835 a 853 do CPC — meios de execução forçada.\n  - Art. 10 da Lei 9.099/95 e orientações do STJ quanto à execução nos Juizados Especiais.\n- **Atenção:** Conservar a linguagem adequada para o rito especial, evitando requerimentos que possam inviabilizar a tramitação simplificada.\n\n---\n\n### V. Cálculos e Planilha de Débitos Atualizados\n- **Objetivo:** Trazer transparência e fundamentação técnica ao quantum exigido.\n- **Argumento Principal:**\n  - Anexar demonstrativo detalhado do valor atualizado da dívida incluindo correção monetária, juros e multa, em conformidade com índices oficiais.\n  - Reafirmar a exigibilidade do valor constante.\n- **Fundamentação Jurídica:**\n  - Art. 322 e 523, §1º do CPC.\n  - Súmulas e jurisprudência do STJ sobre atualização monetária e encargos na execução.\n- **Atenção:** Confirmar a existência de cálculos oficiais nos autos ou providenciar cálculos extraídos por profissional habilitado para evitar impugnações.\n\n---\n\n### VI. Requerimentos Finais\n- Pedido claro e expresso para:\n  - Deferimento do prosseguimento da execução.\n  - Citação do executado para cumprimento da sentença.\n  - Fixação de honorários sucumbenciais e multa em caso de mora.\n  - Autorização para as medidas executórias mencionadas em caso de inadimplemento.\n  - A juntada dos cálculos e demais documentos.\n- **Atenção:** Redigir o pedido em conformidade com a linguagem técnica e objetiva que o Juizado exige.\n\n---\n\n### VII. Documentos Anexados\n- Cópia da sentença transitada em julgado ou decisão definitiva.\n- Planilha de cálculos devidamente atualizada.\n- Procuração do advogado.\n- Eventuais acomodações formais necessárias para tramitação.\n\n---\n\n## Estratégia Geral e Considerações Importantes\n\n- **Por que esta peça é estratégica?**  \n  O processo encontra-se na fase administrativa (pós-sentença definitiva), momento crucial para iniciar a execução e garantir a satisfação do direito material do exequente. A petição fará o cartão de visita para o juízo autorizar a efetivação das medidas coercitivas para o cumprimento da sentença, obrigando o executado ao adimplemento. Além disso, impede a prescrição intercorrente e demonstra diligência processual fundamental em Juizados Especiais Federais.\n\n- **Destaques para o redator:**  \n  - Confirmar todos os dados cadastrais antes da redação.  \n  - Atentar para as especificidades do rito do Juizado Especial Cível no TRF1, em especial quanto à citação e prazos.  \n  - Utilizar jurisprudência recente do STJ e do TRF1 que aprofunde o entendimento sobre cumprimento de sentença e execução no Juizado Especial.  \n  - A petição deve ser concisa, objetiva e técnica, evitando excessos, pois juizado preza pela celeridade.  \n  - Revisar todos os artigos, atualizando-os conforme a legislação vigente e alterações decorrentes do Novo CPC e da Lei 13.105/15, com cuidado para não conflitar com as regras da Lei 9.099/95.\n\n- **Fundamentação adicional recomendada:**  \n  - Súmulas 347 e 381 do STJ no que tocar à liquidez da sentença e atualização dos débitos.  \n  - Jurisprudência do TRF1 sobre a apresentação de cálculos com o primeiro pedido de execução.  \n  - Principais princípios dos Juizados (simplicidade, informalidade, economia processual).\n\n---\n\nEsse esboço é o roteiro para que a peça seja redigida me forma técnica, eficiente e estratégica, maximimando as chances da satisfação do direito do exequente neste estágio processual."
+        }
+      }
+    ],
+    "AI Agent1": [
+      {
+        "json": {
+          "output": "# EXCELENTÍSSIMO SENHOR DOUTOR JUÍZ FEDERAL DO JUÍZADO ESPECIAL CÍVEL DO TRF1 – SEÇÃO JUDICIÁRIA DE [LOCALIDADE]\n\n**PROCESSO Nº:** 0000832-35.2018.4.01.3202\n\n**EXEQUENTE:** [Nome completo do Exequente], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF] e portador do RG nº [RG], residente e domiciliado(a) na [endereço completo].\n\n**EXECUTADO:** [Nome completo do Executado], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF], com endereço na [endereço completo].\n\n**ADVOGADO:** [Nome completo do advogado], inscrito na OAB/[UF] sob o nº [número], com escritório profissional sito à [endereço do escritório], onde recebe intimações e avisos.\n\n---\n\n## I – BREVE RELATO PROCESSUAL E FUNDAMENTAÇÃO FÁTICA\n\nO Exequente ajuizou a presente demanda em 2018, objetivando a satisfação de seu crédito, cuja instrução e audiência foram regularmente realizadas, culminando com a prolação da sentença definitiva em novembro de 2020, encerrando a fase cognitiva do feito.\n\nNaquela ocasião, foi reconhecido parcialmente o direito do Exequente, fixando-se de forma líquida e certa o montante devido pelo Executado, que, todavia, não adimpliu espontaneamente a obrigação imposta, tornando imperiosa a presente execução para garantir a efetividade da tutela jurisdicional.\n\nA decisão transitou em julgado nos termos legais, na forma já certificada nos autos, autorizando, assim, o regular cumprimento da sentença.\n\nO valor atualizado do débito, conforme cálculo detalhado que acompanha esta petição, perfaz a quantia de R$ [valor atualizado], incluindo principal, correção monetária, juros moratórios e multa, devendo ser confirmado por este Juízo para fins de exação.\n\nO rito especial previsto na Lei nº 9.099/95, que rege os Juizados Especiais Cíveis, não inviabiliza a execução, sendo aplicáveis, subsidiariamente, as disposições da Seção II do Capítulo V do CPC, especialmente o artigo 527, inciso II, bem como o art. 535, § 1º, ambos do CPC, que regulam o cumprimento de sentença líquida.\n\n---\n\n## II – DO PEDIDO DE CITAÇÃO PARA CUMPRIMENTO VOLUNTÁRIO\n\nRequer-se a Vossa Excelência que determine a citação do Executado para que cumpra voluntariamente a obrigação no prazo de 15 (quinze) dias, conforme preconiza o art. 525 do Código de Processo Civil, sob pena de multa de 10% sobre o valor do débito, nos termos do art. 523, §1º, do CPC, acrescidos de honorários advocatícios em conformidade com o disposto nos §§ 1º e 2º do art. 85 do mesmo diploma legal.\n\nAdvirta-se ao Executado que o não pagamento no prazo legal ensejará a adoção imediata de medidas coercitivas cabíveis para a satisfação da dívida exequenda, inclusive penhora de ativos financeiros via sistema BacenJud.\n\nCabe destacar que o procedimento sumaríssimo adotado no Juizado Especial não restringe a aplicação destas medidas, estando o presente pedido em consonância com os princípios da economia, celeridade e efetividade da tutela jurisdicional.\n\n---\n\n## III – PEDIDO SUBSIDIÁRIO DE MEDIDAS EXECUTÓRIAS\n\nAnte a possibilidade de inadimplemento, requer-se desde já, em caráter subsidiário, autorização para a adoção das medidas executivas coercitivas previstas nos arts. 835 a 853 do CPC, especialmente:\n\n- Bloqueio de valores via SisbaJud/BacenJud, abrangendo contas bancárias do Executado;\n- Inscrição do débito no cadastro de inadimplentes, se a legislação aplicável assim permitir;\n- Adoção de qualquer outro meio legalmente previsto que se mostre necessário para a satisfação da obrigação executada.\n\nOutrossim, requer-se que o Executado seja previamente intimado acerca da efetivação dessas medidas para garantir seu direito ao contraditório e ampla defesa, conforme assegurado no ordenamento pátrio e nas garantias do devido processo legal.\n\n---\n\n## IV – DOS CÁLCULOS E PLANILHA DE DÉBITOS ATUALIZADOS\n\nApresenta-se anexa a esta petição a planilha de cálculos atualizados elaborada por profissional habilitado, contendo:\n\n- Valor do crédito principal;\n- Atualização monetária conforme índices oficiais vigentes;\n- Juros moratórios incidentes até a presente data;\n- Multa e demais encargos previstos na sentença.\n\nTal demonstrativo visa conferir transparência e segurança jurídica ao quantum exigido, em consonância com os arts. 322 e 523, §1º, do CPC, bem como observando as súmulas nº 347 e 381 do Superior Tribunal de Justiça.\n\nCaso sejam necessários recalculos, requer-se oportunização para manifestação posterior pelo Exequente, a fim de resguardar o contraditório e a ampla defesa.\n\n---\n\n## V – DOS PEDIDOS\n\nAnte o exposto, requer-se a Vossa Excelência:\n\na) O regular prosseguimento da execução do título judicial, determinando-se a citação do Executado para que integre o cumprimento da sentença, no prazo legal de 15 (quinze) dias;\n\nb) A fixação de multa de 10% sobre o valor do débito em caso de mora, bem como a condenação do Executado ao pagamento dos honorários advocatícios de execução, na forma da lei;\n\nc) Que, não ocorrendo o pagamento voluntário, sejam autorizadas desde já as medidas executivas coercitivas, especialmente o bloqueio de ativos financeiros via BacenJud, dentre outras cabíveis;\n\nd) A juntada da presente planilha de cálculos detalhada, bem como demais documentos acostados;\n\ne) Por fim, que todas as intimações e comunicações relativas ao presente feito sejam realizadas em nome do advogado que esta subscreve, sob pena de nulidade.\n\nTermos em que, pede deferimento.\n\n[Localidade], [data].\n\n__________________________________  \n[Nome do advogado]  \nOAB/[UF] nº [número]  \n\n---\n\n## VI – DOCUMENTOS ANEXADOS\n\n1. Cópia da sentença definitiva e certidão de trânsito em julgado ou decisum consolidado;  \n2. Planilha detalhada de cálculos atualizados;  \n3. Procuração do advogado subscritor;  \n4. Outros documentos necessários à comprovação e instrução da execução.\n\n---"
+        }
+      }
+    ],
+    "Markdown": [
+      {
+        "json": {
+          "output": "# EXCELENTÍSSIMO SENHOR DOUTOR JUÍZ FEDERAL DO JUÍZADO ESPECIAL CÍVEL DO TRF1 – SEÇÃO JUDICIÁRIA DE [LOCALIDADE]\n\n**PROCESSO Nº:** 0000832-35.2018.4.01.3202\n\n**EXEQUENTE:** [Nome completo do Exequente], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF] e portador do RG nº [RG], residente e domiciliado(a) na [endereço completo].\n\n**EXECUTADO:** [Nome completo do Executado], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF], com endereço na [endereço completo].\n\n**ADVOGADO:** [Nome completo do advogado], inscrito na OAB/[UF] sob o nº [número], com escritório profissional sito à [endereço do escritório], onde recebe intimações e avisos.\n\n---\n\n## I – BREVE RELATO PROCESSUAL E FUNDAMENTAÇÃO FÁTICA\n\nO Exequente ajuizou a presente demanda em 2018, objetivando a satisfação de seu crédito, cuja instrução e audiência foram regularmente realizadas, culminando com a prolação da sentença definitiva em novembro de 2020, encerrando a fase cognitiva do feito.\n\nNaquela ocasião, foi reconhecido parcialmente o direito do Exequente, fixando-se de forma líquida e certa o montante devido pelo Executado, que, todavia, não adimpliu espontaneamente a obrigação imposta, tornando imperiosa a presente execução para garantir a efetividade da tutela jurisdicional.\n\nA decisão transitou em julgado nos termos legais, na forma já certificada nos autos, autorizando, assim, o regular cumprimento da sentença.\n\nO valor atualizado do débito, conforme cálculo detalhado que acompanha esta petição, perfaz a quantia de R$ [valor atualizado], incluindo principal, correção monetária, juros moratórios e multa, devendo ser confirmado por este Juízo para fins de exação.\n\nO rito especial previsto na Lei nº 9.099/95, que rege os Juizados Especiais Cíveis, não inviabiliza a execução, sendo aplicáveis, subsidiariamente, as disposições da Seção II do Capítulo V do CPC, especialmente o artigo 527, inciso II, bem como o art. 535, § 1º, ambos do CPC, que regulam o cumprimento de sentença líquida.\n\n---\n\n## II – DO PEDIDO DE CITAÇÃO PARA CUMPRIMENTO VOLUNTÁRIO\n\nRequer-se a Vossa Excelência que determine a citação do Executado para que cumpra voluntariamente a obrigação no prazo de 15 (quinze) dias, conforme preconiza o art. 525 do Código de Processo Civil, sob pena de multa de 10% sobre o valor do débito, nos termos do art. 523, §1º, do CPC, acrescidos de honorários advocatícios em conformidade com o disposto nos §§ 1º e 2º do art. 85 do mesmo diploma legal.\n\nAdvirta-se ao Executado que o não pagamento no prazo legal ensejará a adoção imediata de medidas coercitivas cabíveis para a satisfação da dívida exequenda, inclusive penhora de ativos financeiros via sistema BacenJud.\n\nCabe destacar que o procedimento sumaríssimo adotado no Juizado Especial não restringe a aplicação destas medidas, estando o presente pedido em consonância com os princípios da economia, celeridade e efetividade da tutela jurisdicional.\n\n---\n\n## III – PEDIDO SUBSIDIÁRIO DE MEDIDAS EXECUTÓRIAS\n\nAnte a possibilidade de inadimplemento, requer-se desde já, em caráter subsidiário, autorização para a adoção das medidas executivas coercitivas previstas nos arts. 835 a 853 do CPC, especialmente:\n\n- Bloqueio de valores via SisbaJud/BacenJud, abrangendo contas bancárias do Executado;\n- Inscrição do débito no cadastro de inadimplentes, se a legislação aplicável assim permitir;\n- Adoção de qualquer outro meio legalmente previsto que se mostre necessário para a satisfação da obrigação executada.\n\nOutrossim, requer-se que o Executado seja previamente intimado acerca da efetivação dessas medidas para garantir seu direito ao contraditório e ampla defesa, conforme assegurado no ordenamento pátrio e nas garantias do devido processo legal.\n\n---\n\n## IV – DOS CÁLCULOS E PLANILHA DE DÉBITOS ATUALIZADOS\n\nApresenta-se anexa a esta petição a planilha de cálculos atualizados elaborada por profissional habilitado, contendo:\n\n- Valor do crédito principal;\n- Atualização monetária conforme índices oficiais vigentes;\n- Juros moratórios incidentes até a presente data;\n- Multa e demais encargos previstos na sentença.\n\nTal demonstrativo visa conferir transparência e segurança jurídica ao quantum exigido, em consonância com os arts. 322 e 523, §1º, do CPC, bem como observando as súmulas nº 347 e 381 do Superior Tribunal de Justiça.\n\nCaso sejam necessários recalculos, requer-se oportunização para manifestação posterior pelo Exequente, a fim de resguardar o contraditório e a ampla defesa.\n\n---\n\n## V – DOS PEDIDOS\n\nAnte o exposto, requer-se a Vossa Excelência:\n\na) O regular prosseguimento da execução do título judicial, determinando-se a citação do Executado para que integre o cumprimento da sentença, no prazo legal de 15 (quinze) dias;\n\nb) A fixação de multa de 10% sobre o valor do débito em caso de mora, bem como a condenação do Executado ao pagamento dos honorários advocatícios de execução, na forma da lei;\n\nc) Que, não ocorrendo o pagamento voluntário, sejam autorizadas desde já as medidas executivas coercitivas, especialmente o bloqueio de ativos financeiros via BacenJud, dentre outras cabíveis;\n\nd) A juntada da presente planilha de cálculos detalhada, bem como demais documentos acostados;\n\ne) Por fim, que todas as intimações e comunicações relativas ao presente feito sejam realizadas em nome do advogado que esta subscreve, sob pena de nulidade.\n\nTermos em que, pede deferimento.\n\n[Localidade], [data].\n\n__________________________________  \n[Nome do advogado]  \nOAB/[UF] nº [número]  \n\n---\n\n## VI – DOCUMENTOS ANEXADOS\n\n1. Cópia da sentença definitiva e certidão de trânsito em julgado ou decisum consolidado;  \n2. Planilha detalhada de cálculos atualizados;  \n3. Procuração do advogado subscritor;  \n4. Outros documentos necessários à comprovação e instrução da execução.\n\n---",
+          "data": "<h1 id=\"excelentssimosenhordoutorjuzfederaldojuzadoespecialcveldotrf1seojudiciriadelocalidade\">EXCELENTÍSSIMO SENHOR DOUTOR JUÍZ FEDERAL DO JUÍZADO ESPECIAL CÍVEL DO TRF1 – SEÇÃO JUDICIÁRIA DE [LOCALIDADE]</h1>\n<p><strong>PROCESSO Nº:</strong> 0000832-35.2018.4.01.3202</p>\n<p><strong>EXEQUENTE:</strong> [Nome completo do Exequente], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF] e portador do RG nº [RG], residente e domiciliado(a) na [endereço completo].</p>\n<p><strong>EXECUTADO:</strong> [Nome completo do Executado], [nacionalidade], [estado civil], [profissão], inscrito(a) no CPF/MF sob o nº [CPF], com endereço na [endereço completo].</p>\n<p><strong>ADVOGADO:</strong> [Nome completo do advogado], inscrito na OAB/[UF] sob o nº [número], com escritório profissional sito à [endereço do escritório], onde recebe intimações e avisos.</p>\n<hr />\n<h2 id=\"ibreverelatoprocessualefundamentaoftica\">I – BREVE RELATO PROCESSUAL E FUNDAMENTAÇÃO FÁTICA</h2>\n<p>O Exequente ajuizou a presente demanda em 2018, objetivando a satisfação de seu crédito, cuja instrução e audiência foram regularmente realizadas, culminando com a prolação da sentença definitiva em novembro de 2020, encerrando a fase cognitiva do feito.</p>\n<p>Naquela ocasião, foi reconhecido parcialmente o direito do Exequente, fixando-se de forma líquida e certa o montante devido pelo Executado, que, todavia, não adimpliu espontaneamente a obrigação imposta, tornando imperiosa a presente execução para garantir a efetividade da tutela jurisdicional.</p>\n<p>A decisão transitou em julgado nos termos legais, na forma já certificada nos autos, autorizando, assim, o regular cumprimento da sentença.</p>\n<p>O valor atualizado do débito, conforme cálculo detalhado que acompanha esta petição, perfaz a quantia de R$ [valor atualizado], incluindo principal, correção monetária, juros moratórios e multa, devendo ser confirmado por este Juízo para fins de exação.</p>\n<p>O rito especial previsto na Lei nº 9.099/95, que rege os Juizados Especiais Cíveis, não inviabiliza a execução, sendo aplicáveis, subsidiariamente, as disposições da Seção II do Capítulo V do CPC, especialmente o artigo 527, inciso II, bem como o art. 535, § 1º, ambos do CPC, que regulam o cumprimento de sentença líquida.</p>\n<hr />\n<h2 id=\"iidopedidodecitaoparacumprimentovoluntrio\">II – DO PEDIDO DE CITAÇÃO PARA CUMPRIMENTO VOLUNTÁRIO</h2>\n<p>Requer-se a Vossa Excelência que determine a citação do Executado para que cumpra voluntariamente a obrigação no prazo de 15 (quinze) dias, conforme preconiza o art. 525 do Código de Processo Civil, sob pena de multa de 10% sobre o valor do débito, nos termos do art. 523, §1º, do CPC, acrescidos de honorários advocatícios em conformidade com o disposto nos §§ 1º e 2º do art. 85 do mesmo diploma legal.</p>\n<p>Advirta-se ao Executado que o não pagamento no prazo legal ensejará a adoção imediata de medidas coercitivas cabíveis para a satisfação da dívida exequenda, inclusive penhora de ativos financeiros via sistema BacenJud.</p>\n<p>Cabe destacar que o procedimento sumaríssimo adotado no Juizado Especial não restringe a aplicação destas medidas, estando o presente pedido em consonância com os princípios da economia, celeridade e efetividade da tutela jurisdicional.</p>\n<hr />\n<h2 id=\"iiipedidosubsidiriodemedidasexecutrias\">III – PEDIDO SUBSIDIÁRIO DE MEDIDAS EXECUTÓRIAS</h2>\n<p>Ante a possibilidade de inadimplemento, requer-se desde já, em caráter subsidiário, autorização para a adoção das medidas executivas coercitivas previstas nos arts. 835 a 853 do CPC, especialmente:</p>\n<ul>\n<li>Bloqueio de valores via SisbaJud/BacenJud, abrangendo contas bancárias do Executado;</li>\n<li>Inscrição do débito no cadastro de inadimplentes, se a legislação aplicável assim permitir;</li>\n<li>Adoção de qualquer outro meio legalmente previsto que se mostre necessário para a satisfação da obrigação executada.</li>\n</ul>\n<p>Outrossim, requer-se que o Executado seja previamente intimado acerca da efetivação dessas medidas para garantir seu direito ao contraditório e ampla defesa, conforme assegurado no ordenamento pátrio e nas garantias do devido processo legal.</p>\n<hr />\n<h2 id=\"ivdosclculoseplanilhadedbitosatualizados\">IV – DOS CÁLCULOS E PLANILHA DE DÉBITOS ATUALIZADOS</h2>\n<p>Apresenta-se anexa a esta petição a planilha de cálculos atualizados elaborada por profissional habilitado, contendo:</p>\n<ul>\n<li>Valor do crédito principal;</li>\n<li>Atualização monetária conforme índices oficiais vigentes;</li>\n<li>Juros moratórios incidentes até a presente data;</li>\n<li>Multa e demais encargos previstos na sentença.</li>\n</ul>\n<p>Tal demonstrativo visa conferir transparência e segurança jurídica ao quantum exigido, em consonância com os arts. 322 e 523, §1º, do CPC, bem como observando as súmulas nº 347 e 381 do Superior Tribunal de Justiça.</p>\n<p>Caso sejam necessários recalculos, requer-se oportunização para manifestação posterior pelo Exequente, a fim de resguardar o contraditório e a ampla defesa.</p>\n<hr />\n<h2 id=\"vdospedidos\">V – DOS PEDIDOS</h2>\n<p>Ante o exposto, requer-se a Vossa Excelência:</p>\n<p>a) O regular prosseguimento da execução do título judicial, determinando-se a citação do Executado para que integre o cumprimento da sentença, no prazo legal de 15 (quinze) dias;</p>\n<p>b) A fixação de multa de 10% sobre o valor do débito em caso de mora, bem como a condenação do Executado ao pagamento dos honorários advocatícios de execução, na forma da lei;</p>\n<p>c) Que, não ocorrendo o pagamento voluntário, sejam autorizadas desde já as medidas executivas coercitivas, especialmente o bloqueio de ativos financeiros via BacenJud, dentre outras cabíveis;</p>\n<p>d) A juntada da presente planilha de cálculos detalhada, bem como demais documentos acostados;</p>\n<p>e) Por fim, que todas as intimações e comunicações relativas ao presente feito sejam realizadas em nome do advogado que esta subscreve, sob pena de nulidade.</p>\n<p>Termos em que, pede deferimento.</p>\n<p>[Localidade], [data].</p>\n<hr />\n<p>[Nome do advogado]<br />\nOAB/[UF] nº [número]  </p>\n<hr />\n<h2 id=\"vidocumentosanexados\">VI – DOCUMENTOS ANEXADOS</h2>\n<ol>\n<li>Cópia da sentença definitiva e certidão de trânsito em julgado ou decisum consolidado;  </li>\n<li>Planilha detalhada de cálculos atualizados;  </li>\n<li>Procuração do advogado subscritor;  </li>\n<li>Outros documentos necessários à comprovação e instrução da execução.</li>\n</ol>\n<hr />"
+        }
+      }
+    ],
+    "PDFco Api": [
+      {
+        "json": {
+          "pageCount": 3,
+          "url": "https://pdf-temp-files.s3.us-west-2.amazonaws.com/514HHXSU58BQBCFE1V5WWEUU4P2S72A4/Peti__o.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIZJDPLX6D7EHVCKA%2F20250716%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250716T172722Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=a582db4f2f6accc510ce8da5fb3b8a3eb5e971c92e577f438931a68f8a904543",
+          "outputLinkValidTill": "2025-07-16T18:27:22.666935+00:00",
+          "duration": 181,
+          "name": "Peti__o.pdf"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "PDFco Api",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDFco Api": {
+      "main": [
+        [
+          {
+            "node": "Create a link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a link": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f334fde6-8eb0-4af3-b138-fbcadab0f602",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92fc2e7df46013eaabe09ee76f361ab659478c284381add10df51e5609756535"
+  },
+  "id": "C4UZw2ugdTEWvxD5",
+  "tags": []
+}
