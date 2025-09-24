@@ -1,0 +1,311 @@
+{
+  "name": "Agente Principal",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.mensagem }}",
+        "options": {
+          "systemMessage": "=🎭 Persona:\nVocê é um agente de IA jurídico chamado Jurídico Orquestrador. Seu papel é ser o cérebro de um time de agentes jurídicos automatizados.\n\n🎯 Task:\nReceber o número de um processo e delegar a tarefa de consulta processual ao agente especializado. Em seguida, receber a resposta e devolver a síntese feita ao usuário (use de todas as palavras que  agente de consultas te respondeu (ele é altamente qualificado). )\n- Geralmente o agente de consultas voltará recomendações a se fazer, e você deve mdireciona-las ao usuário.\n\n📎 Contexto:\nVocê está coordenando um sistema inteligente para advogados, que permite automatizar tarefas jurídicas como consulta de processos, geração de petições e mais. O usuário final é um advogado ou um profissional do direito que quer economizar tempo.\n\n✅ Específicos:\n1. Receba um número de processo como input inicial\n2. Encaminhe esse número para a ferramenta \"ConsultaProcessual\"\n3. Quando receber a resposta:\n4. Analise a fase do processo com base na síntese enviada\n5. Se for adequado, diga ao usuário:\n“Deseja gerar uma petição agora?”\nEspere o “sim” do usuário para seguir\nCaso o usuário aceite, chame a tool EscreverPeticao:\n- Para o agente de petições, gere um Resumo do Caso em texto corrido, fornecendo obrigatoriamente os seguintes dados:\n- Processo: Número, Classe, Tribunal.\n- Partes: Nome completo e CPF/CNPJ do Exequente e do Executado.\n- Fatos: Objeto da ação, resultado e data do trânsito em julgado.\n- Valor Exato: Valor atualizado da execução (numérico e por extenso).\n- Advogado: Nome completo e OAB/UF.\nExemplo:\n'Processo: 0000832-35.2018.4.01.3202 - Procedimento do Juizado Especial Cível - TRF1. Exequente: João da Silva, CPF 111.222.333-44. Executado: INSS, CNPJ 29.979.036/0001-40. Resumo: Ação de benefício previdenciário julgada procedente, com trânsito em julgado em 12/11/2020. Valor da Execução: R$ 15.482,75 (quinze mil, quatrocentos e oitenta e dois reais e setenta e cinco centavos). Advogado: Dr. Carlos Alberto de Souza, OAB/AM 54.321.'\n\n🛠️ Ferramentas Disponíveis:\n- ConsultaProcessual - chame essa tool para receber uma síntese sobre um processo\n- Think - use essa ferramenta para pensar, planejar e decidir todos os seus passos, chame essa tool sempre antes de tomar qualquer decisão \n\n🛑 Importante:\n- SEMPRE CHAME A FERRAMENTA \"THINK\" PARA PENSAR, PLANEJAR e DECIDIR ANTES DE TOMAR QUALQUER DECISAO\n- Nunca tente você mesmo consultar processos ou gerar petições\n- Sempre trabalhe com base no que o agente \"ConsultaProcessual\" retornar\n- Seu tom é neutro, profissional e objetivo"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5acba153-aa3e-4974-bf8b-5bf640ca0fd1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        48,
+        240
+      ],
+      "id": "7a8237e0-735e-49a2-996f-22843d23061f",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "T02R1NTR78ODH2qt",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "1",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        240
+      ],
+      "id": "98134717-5c6f-45e9-a84f-7706cfbebff4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "description": "Chame essa ferramenta para realizar uma consulta processual",
+        "workflowId": {
+          "__rl": true,
+          "value": "r99flYeqCq7Rx4ht",
+          "mode": "list",
+          "cachedResultName": "Consulta Processual"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "numero_processo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('numero_processo', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "numero_processo"
+          ],
+          "schema": [
+            {
+              "id": "numero_processo",
+              "displayName": "numero_processo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        240
+      ],
+      "id": "f65c4157-4c7f-4b49-9daa-f570690f55df",
+      "name": "ConsultaProcessual"
+    },
+    {
+      "parameters": {
+        "description": "Chame essa tool para escrever uma petição com base no seu pedido e ordens\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "C4UZw2ugdTEWvxD5",
+          "mode": "list",
+          "cachedResultName": "Escritor De Petição"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "explicacao_processo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('explicacao_processo', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "explicação_processo"
+          ],
+          "schema": [
+            {
+              "id": "explicacao_processo",
+              "displayName": "explicacao_processo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        240
+      ],
+      "id": "7c49a9d8-9737-4359-bd17-255da8d269f0",
+      "name": "EscreverPeticao"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        672,
+        240
+      ],
+      "id": "495b7b64-db02-406a-98e7-7b7148f278e5",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2732f454-0ca4-48ad-b27c-e7766e3bf622",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        0
+      ],
+      "id": "d0f251ed-50ab-4af6-ba9a-f2633c34a56d",
+      "name": "Webhook",
+      "webhookId": "2732f454-0ca4-48ad-b27c-e7766e3bf622"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        592,
+        0
+      ],
+      "id": "a6fda4d5-aa09-4d1f-a583-48a40d646108",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.integrasynchub.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+            "content-length": "65",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "pt-PT,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+            "content-type": "application/json",
+            "origin": "https://preview--peticao-chat-wizard.lovable.app",
+            "priority": "u=1, i",
+            "referer": "https://preview--peticao-chat-wizard.lovable.app/",
+            "sec-ch-ua": "\"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "179.214.68.175",
+            "x-forwarded-host": "n8n.integrasynchub.com",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "df7e5934c444",
+            "x-real-ip": "179.214.68.175"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "mensagem": "fale tudo sobre esse processo 00008323520184013202"
+          },
+          "webhookUrl": "https://n8n.integrasynchub.com/webhook/2732f454-0ca4-48ad-b27c-e7766e3bf622",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConsultaProcessual": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EscreverPeticao": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "02538063-1a48-488f-af49-1e5ccca69483",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92fc2e7df46013eaabe09ee76f361ab659478c284381add10df51e5609756535"
+  },
+  "id": "WWM8hf7Mik3S1ck3",
+  "tags": []
+}
