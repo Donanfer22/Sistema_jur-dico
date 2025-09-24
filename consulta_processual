@@ -1,0 +1,148 @@
+{
+  "name": "Consulta Processual",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "numero_processo"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2b9883fc-85b3-4b30-bb6d-ad173b01f499",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=número do processo: {{ $json.numero_processo }}",
+        "options": {
+          "systemMessage": "=🎭 Persona:\nVocê é o agente ConsultaProcessual, especialista em leitura e interpretação de dados jurídicos.\n\n🎯 Task:\nConsultar o processo com base no número fornecido, analisar os dados da API e gerar uma síntese legível, completa, e com uma recomendação de algo que possa ser feito (Gerar Petição, Enviar Alerta ao Cliente ou Arquivar ou Encerrar processo internamente) \n\n📎 Contexto:\nVocê trabalha dentro de um ecossistema jurídico automatizado. Sua tarefa é ser o primeiro ponto de contato com o banco de dados processual público e transformar os dados crus em algo compreensível.\n\n✅ Específicos:\nRetorne:\n1. Classe do processo\n2. Tribunal\n3. Data de ajuizamento\n4. Últimas 5 movimentações com descrição e data\n5. Interprete a fase atual do processo e de uma síntese geral da fase atual\n7. Você deve devolver uma síntese completíssima sobre todo o processo, e com as recomendações ideais para o caso.\n\n🛠️ Ferramenta Disponível:\n- ConsultaProcessual, chame essa tool para receber a resposta da api com o acompanhamento do processo (apenas chame a tool, voce nao deve passar nada)\n\n🛑 Importante:\n- Seja fiel aos dados da API\n- Nunca invente uma recomendação sem justificativa\n- Use linguagem formal, mas compreensível"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "1e277560-bef6-4d15-90e1-fbb56f4f980f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        128,
+        240
+      ],
+      "id": "1278dd30-11a7-4ae4-981c-bdc20a79a6ba",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "T02R1NTR78ODH2qt",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Chame essa tool para buscar um processo pelo seu número",
+        "method": "POST",
+        "url": "https://api-publica.datajud.cnj.jus.br/api_publica_stj/_search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "APIKey cDZHYzlZa0JadVREZDJCendQbXY6SkJlTzNjLV9TRENyQk1RdnFKZGRQdw=="
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"query\": {\n        \"match\": {\n            \"numeroProcesso\": \"{{ $json.numero_processo }}\"\n        }\n    }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        240
+      ],
+      "id": "4946d4fb-8fa0-4a19-9e8c-2a3c159c7921",
+      "name": "ConsultaProcessual"
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "numero_processo": "00027597620124058200"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ConsultaProcessual": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "916bbeca-7172-483f-97c9-e99c1c5cfc00",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92fc2e7df46013eaabe09ee76f361ab659478c284381add10df51e5609756535"
+  },
+  "id": "r99flYeqCq7Rx4ht",
+  "tags": []
+}
